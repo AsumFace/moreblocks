@@ -5,8 +5,35 @@ Copyright © 2011-2019 Hugo Locurcio and contributors.
 Licensed under the zlib license. See LICENSE.md for more information.
 --]]
 
+-- Copy recipe for furnace (the regular recipe must exist at this point!)
+local function copy_cooking_recipe(category, alternate, modname, subname, recipeitem)
+	local original_output = minetest.get_craft_result({method = "cooking", items = { ItemStack(recipeitem .. " 1")}})
+	if original_output.item:is_empty() == true then
+		--print("cooking " .. recipeitem .. " does not give anything!")
+		return
+	end
+
+	local original_destname = original_output.item:get_name()
+
+	-- print("cooking " .. recipeitem .. " produces " .. original_destname)
+
+	local original_destsubname = string.match(original_destname, ":(.+)")
+	if original_destsubname == nil then
+		print("Warning: could not match subname of " .. original_output.item.get_name())
+		return
+	end
+
+	local new_recipe = {type = "cooking"}
+	new_recipe.recipe = modname .. ":" .. category .. "_" .. subname .. alternate
+	new_recipe.output = modname .. ":" .. category .. "_" .. original_destsubname .. alternate
+
+	-- print("created cooking recipe " .. new_recipe.recipe .. " -> " .. new_recipe.output)
+
+	minetest.register_craft(new_recipe)
+end
 
 stairsplus.register_recipes = function(category, alternate, modname, subname, recipeitem)
+	copy_cooking_recipe(category, alternate, modname, subname, recipeitem)
 	if category == "micro" and alternate == "" then
 		minetest.register_craft({
 			type = "shapeless",
